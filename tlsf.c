@@ -1207,6 +1207,16 @@ void tlsf_free(tlsf_t tlsf, void* ptr)
 */
 void* tlsf_realloc(tlsf_t tlsf, void* ptr, size_t size)
 {
+	return tlsf_realloc_align(tlsf, ptr, 0, size);
+}
+
+/*
+** Version of realloc that supports custom alignment (0 == no special requirements)
+** NOTE: if the original pointer is not aligned, it might not be corrected (in case where we
+** concatenate it with the next block).
+*/
+void* tlsf_realloc_align(tlsf_t tlsf, void* ptr, size_t align, size_t size)
+{
 	control_t* control = tlsf_cast(control_t*, tlsf);
 	void* p = 0;
 
@@ -1218,7 +1228,7 @@ void* tlsf_realloc(tlsf_t tlsf, void* ptr, size_t size)
 	/* Requests with NULL pointers are treated as malloc. */
 	else if (!ptr)
 	{
-		p = tlsf_malloc(tlsf, size);
+		p = (align == 0 ? tlsf_malloc(tlsf, size) : tlsf_memalign(tlsf, align, size));
 	}
 	else
 	{
@@ -1237,7 +1247,7 @@ void* tlsf_realloc(tlsf_t tlsf, void* ptr, size_t size)
 		*/
 		if (adjust > cursize && (!block_is_free(next) || adjust > combined))
 		{
-			p = tlsf_malloc(tlsf, size);
+			p = (align == 0 ? tlsf_malloc(tlsf, size) : tlsf_memalign(tlsf, align, size));
 			if (p)
 			{
 				const size_t minsize = tlsf_min(cursize, size);
