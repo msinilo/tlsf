@@ -3,6 +3,8 @@ Two-Level Segregated Fit memory allocator implementation.
 Written by Matthew Conte (matt@baisoku.org).
 Released under the BSD license.
 
+This fork adds support for aligned realloc.
+
 Features
 --------
   * O(1) cost for malloc, free, realloc, memalign
